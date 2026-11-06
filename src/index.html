@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Voidlight</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app">
+
+  <!-- ============ PASEK BOCZNY ============ -->
+  <aside class="rail">
+    <div class="brand" data-tauri-drag-region>
+      <svg class="gem" viewBox="0 0 32 32" aria-hidden="true">
+        <polygon points="16,2 28,12 16,14 4,12" fill="#b79cff"/>
+        <polygon points="4,12 16,14 16,30" fill="#5b2fd1"/>
+        <polygon points="28,12 16,14 16,30" fill="#7c4dff"/>
+      </svg>
+    </div>
+
+    <nav class="nav">
+      <button class="nav-item active" data-page="home">
+        <svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>
+        <span>Start</span>
+      </button>
+      <button class="nav-item" data-page="instances">
+        <svg viewBox="0 0 24 24"><path d="M12 2l9 5v10l-9 5-9-5V7z"/><path d="M3 7l9 5 9-5M12 12v10"/></svg>
+        <span>Instancje</span>
+      </button>
+      <button class="nav-item" data-page="mods">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+        <span>Odkrywaj</span>
+      </button>
+      <button class="nav-item" data-page="settings">
+        <svg viewBox="0 0 24 24"><path d="M4 6h9M17 6h3M4 12h3M11 12h9M4 18h11M19 18h1"/><circle cx="15" cy="6" r="2"/><circle cx="9" cy="12" r="2"/><circle cx="17" cy="18" r="2"/></svg>
+        <span>Ustawienia</span>
+      </button>
+    </nav>
+
+    <div class="profile">
+      <div class="avatar">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="9" r="4"/><path d="M4 21c1-4.5 4-6 8-6s7 1.5 8 6"/></svg>
+        <i class="dot" id="whoDot"></i>
+      </div>
+      <div class="who"><strong id="whoName">Gracz</strong><small id="whoMode">Tryb offline</small></div>
+    </div>
+  </aside>
+
+  <!-- ============ ZAWARTOŚĆ ============ -->
+  <div class="content">
+    <header class="titlebar" data-tauri-drag-region>
+      <span class="wordmark" data-tauri-drag-region>VOIDLIGHT</span>
+      <div class="win-controls">
+        <button id="winMin" aria-label="Minimalizuj"><svg viewBox="0 0 14 14"><path d="M2 7h10"/></svg></button>
+        <button id="winMax" aria-label="Maksymalizuj"><svg viewBox="0 0 14 14"><rect x="2.5" y="2.5" width="9" height="9" rx="1"/></svg></button>
+        <button id="winClose" class="close" aria-label="Zamknij"><svg viewBox="0 0 14 14"><path d="M2.5 2.5l9 9M11.5 2.5l-9 9"/></svg></button>
+      </div>
+    </header>
+
+    <main>
+      <!-- ---- START ---- -->
+      <section class="page scroll" id="page-home">
+        <div class="hero">
+          <canvas id="heroCanvas"></canvas>
+          <div class="hero-shade"></div>
+          <div class="hero-glow"></div>
+          <div class="hero-body">
+            <h1>Witaj z powrotem</h1>
+            <p class="tagline">Szybszy start, stabilniejsze FPS.</p>
+            <div class="chips" id="chips"></div>
+          </div>
+        </div>
+
+        <div class="launch card">
+          <div class="selector" id="selector">
+            <button class="selector-btn" id="selectorBtn" aria-haspopup="listbox" aria-expanded="false">
+              <span class="sel-icon" id="selIcon"></span>
+              <span class="sel-text"><strong id="selName"></strong><small id="selMeta"></small></span>
+              <svg class="chev" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>
+            </button>
+            <ul class="selector-menu" id="selectorMenu" role="listbox" hidden></ul>
+          </div>
+          <button class="play" id="playBtn">GRAJ</button>
+        </div>
+
+        <div class="stats">
+          <div class="stat"><small>Instancje</small><strong id="statInst">0</strong></div>
+          <div class="stat"><small>RAM w komputerze</small><strong id="statRam">–</strong><em id="statRamNote"></em></div>
+          <div class="stat"><small>Profil wydajności</small><strong id="statProfile">–</strong></div>
+        </div>
+
+        <div class="section-head">
+          <h2>Twoje instancje</h2>
+          <button class="linklike" data-goto="instances">Zobacz wszystkie</button>
+        </div>
+        <div class="grid" id="homeInst"></div>
+      </section>
+
+      <!-- ---- INSTANCJE ---- -->
+      <section class="page" id="page-instances" hidden>
+        <div class="page-head">
+          <div>
+            <h2>Instancje</h2>
+            <p class="muted">Każda instancja ma własne mody, światy i ustawienia wydajności. Kliknij dwa razy, aby zobaczyć szczegóły.</p>
+          </div>
+          <div class="row-actions">
+            <button class="ghost-btn" id="packsBtn">Modpacki z Modrinth</button>
+            <button class="ghost-btn" id="mrpackBtn" title="Przeciągnij plik .mrpack na okno launchera">Importuj modpack</button>
+            <button class="primary-btn" id="newBtn">+ Nowa instancja</button>
+          </div>
+        </div>
+        <div class="grid" id="instGrid"></div>
+      </section>
+
+      <!-- ---- STRONA INSTANCJI ---- -->
+      <section class="page scroll" id="page-instance" hidden>
+        <button class="linklike back" id="instBack" type="button">← Wróć do instancji</button>
+        <div class="card ip-hero">
+          <div class="inst-icon big" id="ipIcon"></div>
+          <div class="ip-info">
+            <h2 id="ipName">–</h2>
+            <small class="muted" id="ipMeta"></small>
+            <div class="tags" id="ipTags"></div>
+          </div>
+          <div class="ip-actions">
+            <button class="primary-btn" id="ipPlay" type="button">Graj</button>
+            <button class="secondary-btn" id="ipFolder" type="button">Otwórz folder</button>
+          </div>
+        </div>
+
+        <div class="tabs">
+          <button class="itab active" data-itab="content">Zawartość</button>
+          <button class="itab" data-itab="settings">Ustawienia</button>
+        </div>
+
+        <div id="itab-content" class="ip-pane">
+          <div class="ip-toolbar">
+            <div class="ikinds">
+              <button class="ikind active" data-ikind="mod">Mody</button>
+              <button class="ikind" data-ikind="shader">Shadery</button>
+              <button class="ikind" data-ikind="resourcepack">Paczki zasobów</button>
+              <button class="ikind" data-ikind="datapack">Paczki danych</button>
+            </div>
+            <div class="worldrow" id="instWorldRow" hidden>
+              <label for="instWorld">Świat</label>
+              <select id="instWorld"></select>
+            </div>
+            <button class="secondary-btn" id="ipAdd" type="button">Dodaj zawartość</button>
+          </div>
+          <div class="mod-list" id="instContent"></div>
+        </div>
+
+        <div id="itab-settings" class="ip-pane" hidden>
+          <form class="card form-card" id="ipForm">
+            <h3>Podstawowe</h3>
+            <div class="field">
+              <label for="ipRename">Nazwa</label>
+              <input type="text" id="ipRename" maxlength="40" autocomplete="off" required>
+              <small class="hint">Litery, cyfry, spacja, myślnik i podkreślnik.</small>
+            </div>
+            <div class="field">
+              <label for="ipProfile">Profil wydajności</label>
+              <select id="ipProfile"></select>
+            </div>
+            <div class="field">
+              <label for="ipRam">Pamięć RAM: <b id="ipRamOut"></b></label>
+              <input type="range" id="ipRam" step="512">
+              <small class="hint">Wersji gry ani loadera nie zmieniamy w istniejącej instancji, bo mogłoby to zepsuć światy i mody. Do tego utwórz nową instancję.</small>
+            </div>
+            <div><button class="primary-btn" type="submit">Zapisz zmiany</button></div>
+          </form>
+
+          <div class="card form-card">
+            <h3>Duplikuj</h3>
+            <div class="field">
+              <label for="ipDupName">Nazwa kopii</label>
+              <input type="text" id="ipDupName" maxlength="40" autocomplete="off">
+            </div>
+            <label class="check"><input type="checkbox" id="ipDupWorlds"> Kopiuj też światy</label>
+            <div><button class="secondary-btn" id="ipDup" type="button">Utwórz kopię</button></div>
+          </div>
+
+          <div class="card form-card danger-zone">
+            <h3>Usuń instancję</h3>
+            <p class="muted">Kasuje cały folder instancji: mody, światy i logi. Wspólnych plików gry to nie dotyka. Tego nie da się cofnąć.</p>
+            <div><button class="mini danger" id="ipDelete" type="button">Usuń instancję</button></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---- ODKRYWAJ (mody, shadery, paczki) ---- -->
+      <section class="page" id="page-mods" hidden>
+        <div class="page-head">
+          <div>
+            <h2>Odkrywaj</h2>
+            <p class="muted" id="modsCtx">Mody, shadery i paczki z Modrinth.</p>
+          </div>
+        </div>
+
+        <div class="mods-layout">
+          <aside class="mods-side">
+            <div class="side-block">
+              <h4>Instancja</h4>
+              <select id="modsInstance" aria-label="Instancja"></select>
+            </div>
+
+            <div class="side-block">
+              <h4>Rodzaj zawartości</h4>
+              <div class="kinds" role="tablist" aria-label="Rodzaj zawartości">
+                <button class="kind active" data-kind="mod">Mody</button>
+                <button class="kind" data-kind="shader">Shadery</button>
+                <button class="kind" data-kind="resourcepack">Paczki zasobów</button>
+                <button class="kind" data-kind="datapack">Paczki danych</button>
+              </div>
+            </div>
+
+            <div class="side-block worldrow" id="worldRow" hidden>
+              <h4><label for="worldSelect">Świat</label></h4>
+              <select id="worldSelect"></select>
+              <small class="hint">Paczki danych instalują się w wybranym świecie.</small>
+            </div>
+
+            <div class="side-block perf-banner" id="perfBanner">
+              <strong>Pakiet wydajnościowy</strong>
+              <small>Sodium, Lithium, FerriteCore, Entity Culling, ModernFix i ImmediateFast, razem z wymaganymi zależnościami.</small>
+              <button class="primary-btn" id="perfBtn">Zainstaluj</button>
+            </div>
+
+            <div class="side-block perf-banner" id="shaderNote" hidden>
+              <strong>Shadery wymagają Iris</strong>
+              <small>Iris działa razem z Sodium na Fabric. Zainstaluj go raz, a shadery wybierzesz w grze w ustawieniach grafiki.</small>
+              <button class="secondary-btn" id="irisBtn">Zainstaluj Iris</button>
+            </div>
+          </aside>
+
+          <div class="mods-main">
+            <div class="tabs">
+              <button class="tab active" data-tab="browse">Przeglądaj</button>
+              <button class="tab" data-tab="installed">Zainstalowane <em id="installedCount"></em></button>
+            </div>
+
+            <div class="tabpane" id="tab-browse">
+              <div class="searchbar">
+                <input type="text" id="modQuery" placeholder="Szukaj na Modrinth…" autocomplete="off" spellcheck="false">
+                <select id="modSort" aria-label="Sortowanie">
+                  <option value="downloads">Najpopularniejsze</option>
+                  <option value="relevance">Trafność</option>
+                  <option value="updated">Ostatnio aktualizowane</option>
+                  <option value="newest">Najnowsze</option>
+                </select>
+              </div>
+              <div class="mod-list" id="modList"></div>
+              <nav class="pager" id="modPager" hidden aria-label="Strony wyników"></nav>
+            </div>
+
+            <div class="tabpane" id="tab-installed" hidden>
+              <div class="searchbar">
+                <button class="secondary-btn" id="updateBtn">Aktualizuj wszystko</button>
+                <button class="secondary-btn" id="openFolderBtn">Otwórz folder</button>
+              </div>
+              <p class="hint dnd-hint">Własne pliki (.jar dla modów, .zip dla pozostałych) dodasz, przeciągając je na okno launchera albo wkładając do folderu. Pojawią się na liście jako „własny plik”.</p>
+              <div class="mod-list" id="installedList"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---- USTAWIENIA ---- -->
+      <section class="page scroll" id="page-settings" hidden>
+        <div class="page-head">
+          <div>
+            <h2>Ustawienia</h2>
+            <p class="muted">Konto, pamięć i domyślny profil wydajności dla nowych instancji.</p>
+          </div>
+        </div>
+        <div class="settings-grid">
+          <div class="stack">
+            <div class="card" id="accountCard">
+              <h3>Konto</h3>
+              <div id="accSignedIn" hidden>
+                <p class="muted">Zalogowano jako <b id="accName">–</b>. Gra używa Twojego konta Microsoft (skin, serwery z weryfikacją).</p>
+                <button class="ghost-btn" id="logoutBtn" type="button">Wyloguj</button>
+              </div>
+              <div id="accSignedOut">
+                <div class="field">
+                  <label for="playerName">Nick (tryb offline)</label>
+                  <input type="text" id="playerName" maxlength="16" autocomplete="off" spellcheck="false">
+                  <small class="hint">Bez logowania gra działa offline, bez skina i bez serwerów z weryfikacją.</small>
+                </div>
+                <button class="primary-btn" id="loginBtn" type="button">Zaloguj przez Microsoft</button>
+              </div>
+              <div class="devbox" id="devBox" hidden>
+                <p class="muted">Wejdź na stronę i wpisz kod:</p>
+                <div class="devcode" id="devCode">–</div>
+                <div class="dev-actions">
+                  <button class="ghost-btn" id="devOpen" type="button">Otwórz stronę logowania</button>
+                  <button class="ghost-btn" id="devCancel" type="button">Anuluj</button>
+                </div>
+              </div>
+              <details class="tip" id="msSetup">
+                <summary>Konfiguracja logowania Microsoft (Client ID)</summary>
+                <p class="muted">Logowanie wymaga własnej aplikacji Azure. To jednorazowa konfiguracja:</p>
+                <ol class="steps">
+                  <li>W <button class="linklike" data-open="https://portal.azure.com">portalu Azure</button> otwórz „App registrations” → „New registration”. Nazwa bez słów Minecraft, Microsoft, Xbox. Typ kont: tylko osobiste konta Microsoft.</li>
+                  <li>W „Authentication” włącz „Allow public client flows” i zapisz.</li>
+                  <li>Skopiuj „Application (client) ID” i wklej poniżej.</li>
+                  <li>Wyślij ten Client ID do zatwierdzenia przez Mojang: <button class="linklike" data-open="https://aka.ms/mce-reviewappid">formularz</button>. Do czasu zatwierdzenia (zwykle do tygodnia) Minecraft odrzuci logowanie z błędem „Invalid app registration”.</li>
+                </ol>
+                <div class="field">
+                  <label for="clientId">Client ID</label>
+                  <input type="text" id="clientId" autocomplete="off" spellcheck="false" placeholder="00000000-0000-0000-0000-000000000000">
+                </div>
+                <button class="ghost-btn" id="saveClientId" type="button">Zapisz Client ID</button>
+                <p class="muted">Token odświeżania jest zapisany w pliku w folderze danych launchera (bez szyfrowania), więc nie udostępniaj tego folderu.</p>
+              </details>
+            </div>
+
+            <div class="card">
+              <h3>Pamięć RAM</h3>
+              <div class="kv">
+                <div><span>RAM w komputerze</span><b id="sysTotal">–</b></div>
+                <div><span>Zalecane z modami</span><b id="sysModded">–</b></div>
+                <div><span>Zalecane bez modów</span><b id="sysVanilla">–</b></div>
+              </div>
+              <p class="muted">To, ile pamięci dostaje gra, ustawiasz przy tworzeniu instancji. Więcej nie znaczy szybciej: za duża ilość spowalnia sprzątanie pamięci przez Javę.</p>
+            </div>
+          </div>
+
+          <div class="card" id="profileCard">
+            <h3>Profil wydajności</h3>
+            <p class="muted lead">Profil to gotowy zestaw ustawień Javy. Decyduje, jak płynnie działa gra i ile pamięci zajmuje. Nie wiesz, co wybrać? Zostaw Zbalansowany. Ten wybór będzie domyślny dla nowych instancji, a każdą instancję możesz ustawić inaczej.</p>
+            <div class="choices" id="profileChoices"></div>
+            <details class="tip">
+              <summary>Pokaż ustawienia techniczne</summary>
+              <div class="pre-label">Argumenty uruchomieniowe Javy dla wybranego profilu (dla zalecanej pamięci z modami)</div>
+              <pre id="argsPreview"></pre>
+            </details>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<div class="drop-overlay" id="dropOverlay" hidden><div><strong id="dropText">Upuść pliki</strong></div></div>
+
+<!-- ============ MODPACKI ============ -->
+<dialog id="packsDialog" class="wide">
+  <div class="dlg">
+    <div class="detail-head">
+      <h3>Modpacki z Modrinth</h3>
+      <button class="ghost-btn" id="packsClose" type="button">Zamknij</button>
+    </div>
+    <div class="row">
+      <input type="text" id="packQuery" placeholder="Szukaj modpacków, np. create" autocomplete="off" />
+      <select id="packSort">
+        <option value="downloads">Najpopularniejsze</option>
+        <option value="relevance">Najtrafniejsze</option>
+        <option value="updated">Ostatnio zaktualizowane</option>
+        <option value="newest">Najnowsze</option>
+      </select>
+    </div>
+    <div class="chips"><button type="button" class="chip" data-q="create">Create</button><button type="button" class="chip" data-q="">Wszystkie</button></div>
+    <div class="mod-list det-list" id="packList"></div>
+    <button class="ghost-btn" id="packMore" type="button" hidden>Pokaż więcej</button>
+    <small class="hint">Instalacja pobiera wszystkie mody paczki i tworzy z nich nową instancję (tylko paczki na Fabric).</small>
+  </div>
+</dialog>
+
+<!-- ============ NOWA INSTANCJA ============ -->
+<dialog id="newInstance">
+  <form class="dlg" id="newForm">
+    <h3>Nowa instancja</h3>
+    <div class="field">
+      <label for="fName">Nazwa</label>
+      <input type="text" id="fName" maxlength="40" required autocomplete="off" placeholder="np. Survival Fabric">
+      <small class="hint">Litery, cyfry, spacja, myślnik i podkreślnik.</small>
+    </div>
+    <div class="row">
+      <div class="field">
+        <label for="fVersion">Wersja Minecrafta</label>
+        <select id="fVersion" required></select>
+        <small class="hint" id="fVersionErr" hidden></small>
+      </div>
+      <div class="field">
+        <label for="fLoader">Loader modów</label>
+        <select id="fLoader">
+          <option value="fabric">Fabric</option>
+          <option value="vanilla">Vanilla (bez modów)</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label for="fProfile">Profil wydajności</label>
+      <select id="fProfile"></select>
+    </div>
+    <div class="field">
+      <label for="fRam">Pamięć RAM: <b id="fRamOut"></b></label>
+      <input type="range" id="fRam" step="512">
+    </div>
+    <div class="dlg-actions">
+      <button type="button" class="secondary-btn" id="cancelNew">Anuluj</button>
+      <button type="submit" class="primary-btn">Utwórz</button>
+    </div>
+  </form>
+</dialog>
+
+<div id="toasts" aria-live="polite"></div>
+<script src="main.js"></script>
+<script src="mods.js"></script>
+</body>
+</html>

@@ -1,0 +1,48 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Voidlight",
+  "version": "0.1.0",
+  "identifier": "pl.voidlight.launcher",
+  "build": {
+    "frontendDist": "../src"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [
+      {
+        "label": "main",
+        "title": "Voidlight",
+        "width": 1180,
+        "height": 720,
+        "minWidth": 980,
+        "minHeight": 620,
+        "decorations": false
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": [
+      "nsis"
+    ],
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.ico",
+      "icons/icon.png"
+    ],
+    "shortDescription": "Voidlight - launcher Minecrafta",
+    "windows": {
+      "nsis": {
+        "languages": [
+          "Polish"
+        ],
+        "installMode": "currentUser"
+      }
+    }
+  }
+}
